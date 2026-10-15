@@ -1,0 +1,17 @@
+[
+  {
+    "label": "Build",
+    "command": "cmake -B build && cmake --build build --parallel",
+    "reveal": "always"
+  },
+  {
+    "label": "Run",
+    "command": "./build/chip_8",
+    "reveal": "always"
+  },
+  {
+    "label": "Build And Run",
+    "command": "cmake -B build && cmake --build build --parallel && ./build/chip_8",
+    "reveal": "always"
+  }
+]
