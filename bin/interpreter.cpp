@@ -3,6 +3,7 @@
 #include <expected>
 #include <format>
 #include <fstream>
+#include <random>
 #include <utility>
 
 namespace chp {
@@ -13,6 +14,10 @@ void initialize_context(Memory_Context &ctx) {
   std::fill(ctx.stack.begin(), ctx.stack.end(), 0);
   ctx.i_register = 0;
   ctx.pc_register = PROGRAM_START_ADDRESS;
+  for (auto &row : ctx.framebuffer) {
+      std::fill(row.begin(), row.end(), 0);
+  }
+  ctx.rng.seed(std::random_device{}());
 }
 
 Load_Program_Result load_program_from_file(Memory_Context &ctx,

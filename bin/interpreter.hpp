@@ -5,6 +5,7 @@
 #include <expected>
 #include <filesystem>
 #include <string>
+#include <random>
 
 namespace chp {
 
@@ -39,6 +40,7 @@ struct Memory_Context {
   // guess those should be 12 bits, not 16, as memory size is 4096, but nvm
   word i_register;
   word pc_register;
+  std::mt19937 rng;
 };
 
 void initialize_context(Memory_Context &ctx);

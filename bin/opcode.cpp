@@ -2,14 +2,8 @@
 #include <algorithm>
 #include "interpreter.hpp"
 #include <cassert>
-#include <random>
 
 namespace chp {
-
-// TODO: move to context
-static std::random_device random_device;
-static std::mt19937 generator(random_device());
-static std::uniform_int_distribution<int> distribution(0, 255);
 
 constexpr byte get_x_from_opcode(word opcode) {
   return static_cast<byte>((opcode & 0b0000111100000000) >> 8);
@@ -190,7 +184,9 @@ void interpret_bnnn(Memory_Context &ctx, word opcode) {
 void interpret_cxnn(Memory_Context &ctx, word opcode) {
   byte x = get_x_from_opcode(opcode);
   word nn = get_nn_from_opcode(opcode);
-  byte random_num = distribution(generator);
+
+  std::uniform_int_distribution<int> distribution(0, 255);
+  byte random_num = distribution(ctx.rng);
   ctx.v_registers[x] = static_cast<byte>(random_num & nn);
 }
 
