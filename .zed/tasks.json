@@ -10,8 +10,8 @@
     "reveal": "always"
   },
   {
-    "label": "Build And Run",
-    "command": "cmake -B build && cmake --build build --parallel && ./build/chip_8",
+    "label": "Build And Run Pong",
+    "command": "cmake -B build && cmake --build build --parallel && ./build/chip_8 samples/Pong.ch8",
     "reveal": "always"
   }
 ]
