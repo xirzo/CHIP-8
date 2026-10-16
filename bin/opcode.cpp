@@ -1,10 +1,12 @@
 #include "opcode.hpp"
+#include <algorithm>
 #include "interpreter.hpp"
 #include <cassert>
 #include <random>
 
 namespace chp {
 
+// TODO: move to context
 static std::random_device random_device;
 static std::mt19937 generator(random_device());
 static std::uniform_int_distribution<int> distribution(0, 255);
@@ -27,8 +29,8 @@ constexpr word get_nnn_from_opcode(word opcode) {
 
 // noop
 void interpret_0nnn(Memory_Context &ctx, word opcode) {
-    (void)ctx;
-    (void)opcode;
+  (void)ctx;
+  (void)opcode;
 }
 
 void interpret_00e0(Memory_Context &ctx) {
@@ -160,24 +162,24 @@ void interpret_8xy7(Memory_Context &ctx, word opcode) {
 }
 
 void interpret_8xye(Memory_Context &ctx, word opcode) {
-    byte x = get_x_from_opcode(opcode);
-    byte shifted_bit = (ctx.v_registers[x] & 0b10000000) ? 1 : 0;
-    ctx.v_registers[x] <<= 1;
-    ctx.v_registers[0xF] = shifted_bit;
+  byte x = get_x_from_opcode(opcode);
+  byte shifted_bit = (ctx.v_registers[x] & 0b10000000) ? 1 : 0;
+  ctx.v_registers[x] <<= 1;
+  ctx.v_registers[0xF] = shifted_bit;
 }
 
 void interpret_9xy0(Memory_Context &ctx, word opcode) {
-    byte x = get_x_from_opcode(opcode);
-    byte y = get_y_from_opcode(opcode);
-    byte vx = ctx.v_registers[x];
-    byte vy = ctx.v_registers[y];
-    if (vx == vy) {
-        ctx.pc_register += 2;
-    }
+  byte x = get_x_from_opcode(opcode);
+  byte y = get_y_from_opcode(opcode);
+  byte vx = ctx.v_registers[x];
+  byte vy = ctx.v_registers[y];
+  if (vx != vy) {
+    ctx.pc_register += 2;
+  }
 }
 
 void interpret_annn(Memory_Context &ctx, word opcode) {
-    ctx.i_register = get_nnn_from_opcode(opcode);
+  ctx.i_register = get_nnn_from_opcode(opcode);
 }
 
 void interpret_bnnn(Memory_Context &ctx, word opcode) {
@@ -191,4 +193,65 @@ void interpret_cxnn(Memory_Context &ctx, word opcode) {
   byte random_num = distribution(generator);
   ctx.v_registers[x] = static_cast<byte>(random_num & nn);
 }
+
+void interpret_dxyn(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_ex9e(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_exa1(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx07(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx0a(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx15(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx18(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx1e(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx29(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx33(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx55(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
+void interpret_fx65(Memory_Context &ctx, word opcode) {
+  (void)ctx;
+  (void)opcode;
+}
+
 }; // namespace chp
