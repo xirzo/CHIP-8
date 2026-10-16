@@ -40,4 +40,14 @@ void interpret_8xy5(Memory_Context &ctx, word opcode);
 void interpret_8xy6(Memory_Context &ctx, word opcode);
 
 void interpret_8xy7(Memory_Context &ctx, word opcode);
+
+void interpret_8xye(Memory_Context &ctx, word opcode);
+
+void interpret_9xy0(Memory_Context &ctx, word opcode);
+
+void interpret_annn(Memory_Context &ctx, word opcode);
+
+void interpret_bnnn(Memory_Context &ctx, word opcode);
+
+void interpret_cxnn(Memory_Context &ctx, word opcode);
 }; // namespace chp
