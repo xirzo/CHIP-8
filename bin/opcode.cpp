@@ -5,7 +5,7 @@
 
 namespace chp {
 
-void interpret_program_tick(Chip_Context& ctx) {
+void interpret_program_tick(Chip_Context &ctx) {
     (void)ctx;
 }
 
@@ -30,7 +30,7 @@ constexpr Word get_nnn_from_opcode(Word opcode) {
 }
 
 constexpr Byte get_n_from_opcode(Word opcode) {
-  return static_cast<Byte>(opcode);
+  return static_cast<Byte>(opcode & 0b0000000000001111);
 }
 
 // noop
@@ -250,8 +250,8 @@ void interpret_exa1(Chip_Context &ctx, Word opcode) {
 }
 
 void interpret_fx07(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+  Byte x = get_x_from_opcode(opcode);
+  ctx.v_registers[x] = ctx.delay_timer;
 }
 
 // TODO: don't forget to handle blocking with "is_waiting_for_input"
@@ -271,18 +271,18 @@ void interpret_fx0a(Chip_Context &ctx, Word opcode) {
 }
 
 void interpret_fx15(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+  Byte x = get_x_from_opcode(opcode);
+  ctx.delay_timer = ctx.v_registers[x];
 }
 
 void interpret_fx18(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+  Byte x = get_x_from_opcode(opcode);
+  ctx.sound_timer = ctx.v_registers[x];
 }
 
 void interpret_fx1e(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+  Byte x = get_x_from_opcode(opcode);
+  ctx.i_register += ctx.v_registers[x];
 }
 
 void interpret_fx29(Chip_Context &ctx, Word opcode) {
@@ -296,13 +296,27 @@ void interpret_fx33(Chip_Context &ctx, Word opcode) {
 }
 
 void interpret_fx55(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+  Byte x = get_x_from_opcode(opcode);
+
+  Byte register_pointer = 0;
+  Word memory_pointer = ctx.i_register;
+  while (register_pointer <= x) {
+    ctx.memory[memory_pointer] = ctx.v_registers[register_pointer];
+    register_pointer++;
+    memory_pointer++;
+  }
 }
 
 void interpret_fx65(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+  Byte x = get_x_from_opcode(opcode);
+
+  Byte register_pointer = 0;
+  Word memory_pointer = ctx.i_register;
+  while (register_pointer <= x) {
+    ctx.v_registers[register_pointer] = ctx.memory[memory_pointer];
+    register_pointer++;
+    memory_pointer++;
+  }
 }
 
 }; // namespace chp
