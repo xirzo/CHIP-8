@@ -30,38 +30,38 @@ constexpr auto TIMER_HZ = 60;
 constexpr auto TIMER_PERIOD =
     std::chrono::nanoseconds(NANOSECONDS_IN_SECOND / TIMER_HZ);
 
-using byte = unsigned char;
-using word = unsigned short;
+using Byte = unsigned char;
+using Word = unsigned short;
 using Load_Program_Result = std::expected<void, std::string>;
 using Clock = std::chrono::steady_clock;
 
-struct Memory_Context {
-  std::array<byte, TOTAL_MEMORY_SIZE_BYTES> memory;
-  std::array<byte, NUMBER_OF_V_REGISTERS> v_registers;
-  std::array<std::array<byte, SCREEN_WIDTH>, SCREEN_HEIGHT> framebuffer;
-  std::array<word, MAX_STACK_DEPTH> stack;
+struct Chip_Context {
+  std::array<Byte, TOTAL_MEMORY_SIZE_BYTES> memory;
+  std::array<Byte, NUMBER_OF_V_REGISTERS> v_registers;
+  std::array<std::array<Byte, SCREEN_WIDTH>, SCREEN_HEIGHT> framebuffer;
+  std::array<Word, MAX_STACK_DEPTH> stack;
   std::array<bool, KEYS_NUMBER> keypad;
   bool is_waiting_for_input;
-  word stack_pointer;
+  Word stack_pointer;
   // guess those should be 12 bits, not 16, as memory size is 4096, but nvm
-  word i_register;
-  word pc_register;
+  Word i_register;
+  Word pc_register;
   std::mt19937 rng;
-  byte delay_timer;
-  byte sound_timer;
+  Byte delay_timer;
+  Byte sound_timer;
 };
 
 struct Multimedia_Backend {
   std::function<bool()> should_exit;
-  std::function<void(Memory_Context &)> pool_input;
-  std::function<void(Memory_Context &)> render_frame;
+  std::function<void(Chip_Context &)> pool_input;
+  std::function<void(Chip_Context &)> render_frame;
 };
 
-void initialize_context(Memory_Context &ctx);
+void initialize_context(Chip_Context &ctx);
 
-Load_Program_Result load_program_from_file(Memory_Context &ctx,
+Load_Program_Result load_program_from_file(Chip_Context &ctx,
                                            const std::filesystem::path &path);
 
-void run_program(Memory_Context &ctx, Multimedia_Backend &backend);
+void run_program(Chip_Context &ctx, Multimedia_Backend &backend);
 
 }; // namespace chp

@@ -8,10 +8,9 @@
 #include <random>
 #include <utility>
 
-
 namespace chp {
 
-void initialize_context(Memory_Context &ctx) {
+void initialize_context(Chip_Context &ctx) {
   std::fill(ctx.memory.begin(), ctx.memory.end(), 0);
   std::fill(ctx.v_registers.begin(), ctx.v_registers.end(), 0);
   std::fill(ctx.stack.begin(), ctx.stack.end(), 0);
@@ -28,7 +27,7 @@ void initialize_context(Memory_Context &ctx) {
   ctx.rng.seed(std::random_device{}());
 }
 
-Load_Program_Result load_program_from_file(Memory_Context &ctx,
+Load_Program_Result load_program_from_file(Chip_Context &ctx,
                                            const std::filesystem::path &path) {
   if (!std::filesystem::exists(path)) {
     return std::unexpected<std::string>(
@@ -65,7 +64,7 @@ Load_Program_Result load_program_from_file(Memory_Context &ctx,
   return {};
 }
 
-static void tick_timers(Memory_Context &ctx) {
+static void tick_timers(Chip_Context &ctx) {
   if (ctx.delay_timer > 0) {
     ctx.delay_timer--;
   }
@@ -74,7 +73,7 @@ static void tick_timers(Memory_Context &ctx) {
   }
 }
 
-void run_program(Memory_Context &ctx, Multimedia_Backend &backend) {
+void run_program(Chip_Context &ctx, Multimedia_Backend &backend) {
   std::chrono::time_point last_timer_tick = Clock::now();
 
   while (!backend.should_exit()) {
@@ -84,8 +83,8 @@ void run_program(Memory_Context &ctx, Multimedia_Backend &backend) {
 
     std::chrono::time_point now = Clock::now();
     while (now - last_timer_tick >= TIMER_PERIOD) {
-        tick_timers(ctx);
-        last_timer_tick += TIMER_PERIOD;
+      tick_timers(ctx);
+      last_timer_tick += TIMER_PERIOD;
     }
   }
 }

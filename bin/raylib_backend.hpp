@@ -11,4 +11,4 @@ void destroy_raylib_backend(Multimedia_Backend &backend);
 
 void pool_input();
 
-}
+} // namespace chp

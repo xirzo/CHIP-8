@@ -6,7 +6,7 @@ namespace chp {
 
 struct KeyMap {
   int raylib_key;
-  byte chip8_key;
+  Byte chip8_key;
 };
 
 static constexpr KeyMap KEY_MAP[] = {
@@ -16,7 +16,7 @@ static constexpr KeyMap KEY_MAP[] = {
     {KEY_Z, 0xA},   {KEY_X, 0x0},   {KEY_C, 0xB},     {KEY_V, 0xF},
 };
 
-void poll_input(Memory_Context &ctx) {
+void poll_input(Chip_Context &ctx) {
   (void)ctx;
   ctx.keypad.fill(false);
 
@@ -27,7 +27,7 @@ void poll_input(Memory_Context &ctx) {
   }
 }
 
-static void render_frame(Memory_Context &ctx) {
+static void render_frame(Chip_Context &ctx) {
   (void)ctx;
   BeginDrawing();
   ClearBackground(BLACK);

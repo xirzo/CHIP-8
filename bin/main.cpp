@@ -5,7 +5,7 @@
 constexpr auto TEST_PROGRAM_PATH = "./build/prog.chip";
 
 int main(void) {
-  chp::Memory_Context ctx;
+  chp::Chip_Context ctx;
 
   chp::initialize_context(ctx);
 
@@ -13,8 +13,8 @@ int main(void) {
       chp::load_program_from_file(ctx, TEST_PROGRAM_PATH);
 
   if (!load_result.has_value()) {
-      std::cerr << load_result.error() << std::endl;
-      return 1;
+    std::cerr << load_result.error() << std::endl;
+    return 1;
   }
 
   chp::Multimedia_Backend backend;
