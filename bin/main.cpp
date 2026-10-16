@@ -2,15 +2,17 @@
 #include "raylib_backend.hpp"
 #include <iostream>
 
-constexpr auto TEST_PROGRAM_PATH = "./build/prog.chip";
+constexpr auto DEFAULT_PROGRAM_PATH = "./assets/Pong.ch8";
 
-int main(void) {
+int main(int argc, char **argv) {
+  const char *program_path = argc > 1 ? argv[1] : DEFAULT_PROGRAM_PATH;
+
   chp::Chip_Context ctx;
 
   chp::initialize_context(ctx);
 
   chp::Load_Program_Result load_result =
-      chp::load_program_from_file(ctx, TEST_PROGRAM_PATH);
+      chp::load_program_from_file(ctx, program_path);
 
   if (!load_result.has_value()) {
     std::cerr << load_result.error() << std::endl;

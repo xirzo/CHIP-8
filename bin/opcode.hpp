@@ -7,7 +7,7 @@ namespace chp {
 
 void interpret_program_tick(Chip_Context &ctx);
 
-void interpret_0nnn(Chip_Context &ctx, Word opcode);
+void interpret_0nnn(Chip_Context &ctx);
 
 void interpret_00e0(Chip_Context &ctx);
 

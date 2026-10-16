@@ -6,6 +6,7 @@
 #include <format>
 #include <fstream>
 #include <random>
+#include <thread>
 #include <utility>
 
 namespace chp {
@@ -15,6 +16,8 @@ void initialize_context(Chip_Context &ctx) {
   std::fill(ctx.v_registers.begin(), ctx.v_registers.end(), 0);
   std::fill(ctx.stack.begin(), ctx.stack.end(), 0);
   std::fill(ctx.keypad.begin(), ctx.keypad.end(), 0);
+  std::copy(FONT_SET.begin(), FONT_SET.end(),
+            ctx.memory.begin() + FONT_START_ADDRESS);
   ctx.is_waiting_for_input = false;
   ctx.i_register = 0;
   ctx.delay_timer = 0;
@@ -74,18 +77,26 @@ static void tick_timers(Chip_Context &ctx) {
 }
 
 void run_program(Chip_Context &ctx, Multimedia_Backend &backend) {
-  std::chrono::time_point last_timer_tick = Clock::now();
+  auto next_frame = Clock::now() + TIMER_PERIOD;
 
   while (!backend.should_exit()) {
     backend.pool_input(ctx);
-    interpret_program_tick(ctx);
-    backend.render_frame(ctx);
 
-    std::chrono::time_point now = Clock::now();
-    while (now - last_timer_tick >= TIMER_PERIOD) {
-      tick_timers(ctx);
-      last_timer_tick += TIMER_PERIOD;
+    for (int i = 0; i < CYCLES_PER_FRAME; i++) {
+      interpret_program_tick(ctx);
     }
+
+    tick_timers(ctx);
+    backend.render_frame(ctx);
+    backend.update_sound(ctx);
+
+    auto now = Clock::now();
+    if (now < next_frame) {
+      std::this_thread::sleep_until(next_frame);
+    } else if (now - next_frame > TIMER_PERIOD * 5) {
+      next_frame = now;
+    }
+    next_frame += TIMER_PERIOD;
   }
 }
 

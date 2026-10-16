@@ -2,12 +2,11 @@
 #include "interpreter.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
+#include <ios>
+#include <iostream>
 
 namespace chp {
-
-void interpret_program_tick(Chip_Context &ctx) {
-    (void)ctx;
-}
 
 constexpr Byte get_key_from_register(Word reg) {
   return static_cast<Byte>(reg & 0b0000000000001111);
@@ -33,11 +32,122 @@ constexpr Byte get_n_from_opcode(Word opcode) {
   return static_cast<Byte>(opcode & 0b0000000000001111);
 }
 
-// noop
-void interpret_0nnn(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+constexpr Byte get_opcode_family(Word opcode) {
+  return static_cast<Byte>((opcode >> 12) & 0b0000000000001111);
 }
+
+void interpret_program_tick(Chip_Context &ctx) {
+  Word opcode = (static_cast<Word>(ctx.memory[ctx.pc_register]) << 8) |
+                static_cast<Word>(ctx.memory[ctx.pc_register + 1]);
+  ctx.pc_register += 2;
+
+  Byte opcode_family = get_opcode_family(opcode);
+  Byte n = get_n_from_opcode(opcode);
+  Byte nn = get_nn_from_opcode(opcode);
+
+  switch (opcode_family) {
+  case 0x0:
+    if (nn == 0xE0)
+      interpret_00e0(ctx);
+    else if (nn == 0xEE)
+      interpret_00ee(ctx);
+    else
+      interpret_0nnn(ctx);
+    break;
+  case 0x1:
+    interpret_1nnn(ctx, opcode);
+    break;
+  case 0x2:
+    interpret_2nnn(ctx, opcode);
+    break;
+  case 0x3:
+    interpret_3xnn(ctx, opcode);
+    break;
+  case 0x4:
+    interpret_4xnn(ctx, opcode);
+    break;
+  case 0x5:
+    interpret_5xy0(ctx, opcode);
+    break;
+  case 0x6:
+    interpret_6xnn(ctx, opcode);
+    break;
+  case 0x7:
+    interpret_7xnn(ctx, opcode);
+    break;
+  case 0x8:
+    if (n == 0x0)
+      interpret_8xy0(ctx, opcode);
+    else if (n == 0x1)
+      interpret_8xy1(ctx, opcode);
+    else if (n == 0x2)
+      interpret_8xy2(ctx, opcode);
+    else if (n == 0x3)
+      interpret_8xy3(ctx, opcode);
+    else if (n == 0x4)
+      interpret_8xy4(ctx, opcode);
+    else if (n == 0x5)
+      interpret_8xy5(ctx, opcode);
+    else if (n == 0x6)
+      interpret_8xy6(ctx, opcode);
+    else if (n == 0x7)
+      interpret_8xy7(ctx, opcode);
+    else
+      interpret_8xye(ctx, opcode);
+    break;
+  case 0x9:
+    interpret_9xy0(ctx, opcode);
+    break;
+  case 0xA:
+    interpret_annn(ctx, opcode);
+    break;
+  case 0xB:
+    interpret_bnnn(ctx, opcode);
+    break;
+  case 0xC:
+    interpret_cxnn(ctx, opcode);
+    break;
+  case 0xD:
+    interpret_dxyn(ctx, opcode);
+    break;
+  case 0xE:
+    if (nn == 0x9e)
+      interpret_ex9e(ctx, opcode);
+    else
+      interpret_exa1(ctx, opcode);
+    break;
+  case 0xF:
+    if (nn == 0x07)
+      interpret_fx07(ctx, opcode);
+    else if (nn == 0x0A)
+      interpret_fx0a(ctx, opcode);
+    else if (nn == 0x15)
+      interpret_fx15(ctx, opcode);
+    else if (nn == 0x18)
+      interpret_fx18(ctx, opcode);
+    else if (nn == 0x1E)
+      interpret_fx1e(ctx, opcode);
+    else if (nn == 0x29)
+      interpret_fx29(ctx, opcode);
+    else if (nn == 0x33)
+      interpret_fx33(ctx, opcode);
+    else if (nn == 0x55)
+      interpret_fx55(ctx, opcode);
+    else
+      interpret_fx65(ctx, opcode);
+    break;
+  default:
+    std::cerr << "Unknown opcode: " << std::hex << opcode << std::endl;
+    std::abort();
+  }
+
+  if (ctx.is_waiting_for_input) {
+    ctx.pc_register -= 2;
+  }
+}
+
+// noop
+void interpret_0nnn(Chip_Context &ctx) { (void)ctx; }
 
 void interpret_00e0(Chip_Context &ctx) {
   for (auto &row : ctx.framebuffer) {
@@ -190,7 +300,7 @@ void interpret_annn(Chip_Context &ctx, Word opcode) {
 
 void interpret_bnnn(Chip_Context &ctx, Word opcode) {
   Word nnn = get_nnn_from_opcode(opcode);
-  ctx.pc_register = (ctx.v_registers[0] + nnn) & 0x0000111111111111;
+  ctx.pc_register = (ctx.v_registers[0] + nnn) & 0x0FFF;
 }
 
 void interpret_cxnn(Chip_Context &ctx, Word opcode) {
@@ -224,11 +334,11 @@ void interpret_dxyn(Chip_Context &ctx, Word opcode) {
       Byte x = (coord_x + col) % SCREEN_WIDTH;
       Byte y = (coord_y + row) % SCREEN_HEIGHT;
 
-      if (ctx.framebuffer[x][y] == 1) {
+      if (ctx.framebuffer[y][x] == 1) {
         ctx.v_registers[15] = 1;
       }
 
-      ctx.framebuffer[x][y] ^= 1;
+      ctx.framebuffer[y][x] ^= 1;
     }
   }
 }
@@ -254,7 +364,6 @@ void interpret_fx07(Chip_Context &ctx, Word opcode) {
   ctx.v_registers[x] = ctx.delay_timer;
 }
 
-// TODO: don't forget to handle blocking with "is_waiting_for_input"
 void interpret_fx0a(Chip_Context &ctx, Word opcode) {
   if (!ctx.is_waiting_for_input) {
     ctx.is_waiting_for_input = true;
@@ -280,19 +389,24 @@ void interpret_fx18(Chip_Context &ctx, Word opcode) {
   ctx.sound_timer = ctx.v_registers[x];
 }
 
+// NOTE: some emulators do check for overflow, some don't
+// there are games that use both of these behaviours
 void interpret_fx1e(Chip_Context &ctx, Word opcode) {
   Byte x = get_x_from_opcode(opcode);
   ctx.i_register += ctx.v_registers[x];
 }
 
 void interpret_fx29(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+  Byte x = get_x_from_opcode(opcode);
+  ctx.i_register = FONT_START_ADDRESS + (ctx.v_registers[x] * 5);
 }
 
 void interpret_fx33(Chip_Context &ctx, Word opcode) {
-  (void)ctx;
-  (void)opcode;
+  Byte x = get_x_from_opcode(opcode);
+  Byte value = ctx.v_registers[x];
+  ctx.memory[ctx.i_register] = value / 100;
+  ctx.memory[ctx.i_register + 1] = (value / 10) % 10;
+  ctx.memory[ctx.i_register + 2] = value % 10;
 }
 
 void interpret_fx55(Chip_Context &ctx, Word opcode) {
