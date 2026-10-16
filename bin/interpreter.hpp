@@ -29,6 +29,8 @@ constexpr size_t MAX_STACK_DEPTH = 16;
 constexpr size_t SCREEN_WIDTH = 64;
 constexpr size_t SCREEN_HEIGHT = 32;
 
+constexpr size_t KEYS_NUMBER = 16;
+
 using Load_Program_Result = std::expected<void, std::string>;
 
 struct Memory_Context {
@@ -36,6 +38,8 @@ struct Memory_Context {
   std::array<byte, NUMBER_OF_V_REGISTERS> v_registers;
   std::array<std::array<byte, SCREEN_WIDTH>, SCREEN_HEIGHT> framebuffer;
   std::array<word, MAX_STACK_DEPTH> stack;
+  std::array<bool, KEYS_NUMBER> keypad;
+  bool is_waiting_for_input;
   word stack_pointer;
   // guess those should be 12 bits, not 16, as memory size is 4096, but nvm
   word i_register;

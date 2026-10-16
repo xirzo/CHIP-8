@@ -5,6 +5,10 @@
 
 namespace chp {
 
+constexpr byte get_key_from_register(word reg) {
+  return static_cast<byte>(reg & 0b0000000000001111);
+}
+
 constexpr byte get_x_from_opcode(word opcode) {
   return static_cast<byte>((opcode & 0b0000111100000000) >> 8);
 }
@@ -19,6 +23,10 @@ constexpr word get_nn_from_opcode(word opcode) {
 
 constexpr word get_nnn_from_opcode(word opcode) {
   return (opcode & 0b0000111111111111);
+}
+
+constexpr byte get_n_from_opcode(word opcode) {
+  return static_cast<byte>(opcode);
 }
 
 // noop
@@ -191,18 +199,50 @@ void interpret_cxnn(Memory_Context &ctx, word opcode) {
 }
 
 void interpret_dxyn(Memory_Context &ctx, word opcode) {
-  (void)ctx;
-  (void)opcode;
+  byte coord_x = ctx.v_registers[get_x_from_opcode(opcode)];
+  byte coord_y = ctx.v_registers[get_y_from_opcode(opcode)];
+  byte height = get_n_from_opcode(opcode);
+
+  if (ctx.i_register + height > TOTAL_MEMORY_SIZE_BYTES) {
+    return;
+  }
+
+  ctx.v_registers[15] = 0;
+
+  for (int row = 0; row < height; row++) {
+    byte sprite_byte = ctx.memory[ctx.i_register + row];
+
+    for (int col = 0; col < 8; col++) {
+      if ((sprite_byte & (0x80 >> col)) == 0) {
+        continue;
+      }
+
+      byte x = (coord_x + col) % SCREEN_WIDTH;
+      byte y = (coord_y + row) % SCREEN_HEIGHT;
+
+      if (ctx.framebuffer[x][y] == 1) {
+        ctx.v_registers[15] = 1;
+      }
+
+      ctx.framebuffer[x][y] ^= 1;
+    }
+  }
 }
 
 void interpret_ex9e(Memory_Context &ctx, word opcode) {
-  (void)ctx;
-  (void)opcode;
+  byte x = get_x_from_opcode(opcode);
+  byte key = get_key_from_register(ctx.v_registers[x]);
+  if (ctx.keypad[key]) {
+    ctx.pc_register += 2;
+  }
 }
 
 void interpret_exa1(Memory_Context &ctx, word opcode) {
-  (void)ctx;
-  (void)opcode;
+  byte x = get_x_from_opcode(opcode);
+  byte key = get_key_from_register(ctx.v_registers[x]);
+  if (!ctx.keypad[key]) {
+    ctx.pc_register += 2;
+  }
 }
 
 void interpret_fx07(Memory_Context &ctx, word opcode) {
@@ -210,9 +250,20 @@ void interpret_fx07(Memory_Context &ctx, word opcode) {
   (void)opcode;
 }
 
+// TODO: don't forget to handle blocking with "is_waiting_for_input"
 void interpret_fx0a(Memory_Context &ctx, word opcode) {
-  (void)ctx;
-  (void)opcode;
+  if (!ctx.is_waiting_for_input) {
+    ctx.is_waiting_for_input = true;
+  }
+
+  byte x = get_x_from_opcode(opcode);
+  for (byte i = 0; i < ctx.keypad.size(); i++) {
+    if (ctx.keypad[i]) {
+      ctx.is_waiting_for_input = false;
+      ctx.v_registers[x] = i;
+      break;
+    }
+  }
 }
 
 void interpret_fx15(Memory_Context &ctx, word opcode) {
