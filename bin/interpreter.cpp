@@ -9,7 +9,7 @@
 namespace chp {
 
 void initialize_context(Memory_Context &ctx) {
-  std::fill(ctx.memory.begin(), ctx.v_registers.end(), 0);
+  std::fill(ctx.memory.begin(), ctx.memory.end(), 0);
   std::fill(ctx.v_registers.begin(), ctx.v_registers.end(), 0);
   std::fill(ctx.stack.begin(), ctx.stack.end(), 0);
   std::fill(ctx.keypad.begin(), ctx.keypad.end(), 0);
