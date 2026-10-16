@@ -3,6 +3,7 @@
 #include <expected>
 #include <format>
 #include <fstream>
+#include <utility>
 
 namespace chp {
 
@@ -43,7 +44,7 @@ Load_Program_Result load_program_from_file(Memory_Context &ctx,
   file.read(program_ptr, file_size);
 
   std::streamsize bytes_read = file.gcount();
-  if (bytes_read < file_size) {
+  if (std::cmp_less(bytes_read , file_size)) {
     return std::unexpected<std::string>(
         std::format("Could not read all data from file by path \"{}\"", path));
   }

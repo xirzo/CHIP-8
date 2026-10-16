@@ -7,4 +7,5 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(chip_8
   bin/main.cpp
   bin/interpreter.cpp
+  bin/opcode.cpp
 )
