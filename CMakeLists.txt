@@ -27,6 +27,7 @@ endif()
 add_executable(${PROJECT_NAME}
   bin/main.cpp
   bin/interpreter.cpp
+  bin/raylib_backend.cpp
   bin/opcode.cpp
 )
 

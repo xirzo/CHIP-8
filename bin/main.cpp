@@ -1,5 +1,5 @@
 #include "interpreter.hpp"
-#include "opcode.hpp"
+#include "raylib_backend.hpp"
 #include <iostream>
 
 constexpr auto TEST_PROGRAM_PATH = "./build/prog.chip";
@@ -17,8 +17,11 @@ int main(void) {
       return 1;
   }
 
-  chp::word test = 0b0000110100000000;
-  chp::interpret_3xnn(ctx, test);
+  chp::Multimedia_Backend backend;
+  chp::initialize_raylib_backend(backend);
 
+  chp::run_program(ctx, backend);
+
+  chp::destroy_raylib_backend(backend);
   return 0;
 }
